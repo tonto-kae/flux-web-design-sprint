@@ -1,19 +1,25 @@
 import Image from "next/image";
+import { client } from "@/sanity/lib/client";
+import { urlFor } from "@/sanity/lib/image";
+import { portfolioQuery, type SanityImage } from "@/sanity/lib/queries";
 
-const PROJECTS_LEFT = [
-  { title: "Surfers Paradise", img: "/portfolio/surfers-paradise.png", aspect: "aspect-[91/100]" },
-  { title: "Cyberpunk Caffe", img: "/portfolio/cyberpunk-caffe.png", aspect: "aspect-[97/100]" },
-];
+type Project = {
+  _id: string;
+  title: string;
+  aspect: string;
+  image: SanityImage;
+};
 
-const PROJECTS_RIGHT = [
-  { title: "Agency 976", img: "/portfolio/agency-976.png", aspect: "aspect-[97/100]" },
-  { title: "Minimal Playground", img: "/portfolio/minimal-playground.png", aspect: "aspect-[91/100]" },
-];
-
-const TAGS = ["Social Media", "Photography"];
-
-const CTA_TEXT =
-  "Discover how my creativity transforms ideas into impactful digital experiences — schedule a call with me to get started.";
+type Data = {
+  topLabel: string;
+  sectionNumber: string;
+  headline: string;
+  ctaText: string;
+  ctaButtonLabel: string;
+  tags: string[];
+  projectsLeft: Project[];
+  projectsRight: Project[];
+};
 
 const LABEL_CLASS =
   "font-[family-name:var(--font-geist-mono)] text-xs sm:text-sm uppercase leading-[1.1] text-[#1f1f1f]";
@@ -56,19 +62,25 @@ function ArrowIcon() {
   );
 }
 
-function PortfolioCard({ title, img, aspect }: { title: string; img: string; aspect: string }) {
+function PortfolioCard({
+  project,
+  tags,
+}: {
+  project: Project;
+  tags: string[];
+}) {
   return (
     <div className="flex flex-col gap-2.5 w-full">
-      <div className={`relative w-full ${aspect} overflow-hidden`}>
+      <div className={`relative w-full ${project.aspect} overflow-hidden`}>
         <Image
-          src={img}
-          alt={title}
+          src={urlFor(project.image).url()}
+          alt={project.title}
           fill
           sizes="(min-width: 1024px) 50vw, 100vw"
           className="object-cover"
         />
         <div className="absolute bottom-4 left-4 flex gap-3 items-center">
-          {TAGS.map((tag) => (
+          {tags.map((tag) => (
             <Pill key={tag}>{tag}</Pill>
           ))}
         </div>
@@ -78,7 +90,7 @@ function PortfolioCard({ title, img, aspect }: { title: string; img: string; asp
           className="font-[family-name:var(--font-inter)] font-black uppercase leading-[1.1] text-black whitespace-nowrap"
           style={TITLE_STYLE}
         >
-          {title}
+          {project.title}
         </h3>
         <ArrowIcon />
       </div>
@@ -86,7 +98,7 @@ function PortfolioCard({ title, img, aspect }: { title: string; img: string; asp
   );
 }
 
-function CtaCard() {
+function CtaCard({ text, label }: { text: string; label: string }) {
   return (
     <div className="flex items-stretch gap-3 max-w-[465px] w-full">
       <div className="flex flex-col justify-between items-start w-6 shrink-0">
@@ -95,10 +107,10 @@ function CtaCard() {
       </div>
       <div className="flex-1 py-3 flex flex-col gap-2.5">
         <p className="font-[family-name:var(--font-inter)] italic text-sm leading-[1.3] tracking-[-0.04em] text-[#1f1f1f]">
-          {CTA_TEXT}
+          {text}
         </p>
         <button className="self-start bg-black text-white font-[family-name:var(--font-inter)] font-medium text-sm tracking-[-0.04em] px-4 py-3 rounded-[24px]">
-          Let&apos;s talk
+          {label}
         </button>
       </div>
       <div className="flex flex-col justify-between items-end w-6 shrink-0">
@@ -109,45 +121,48 @@ function CtaCard() {
   );
 }
 
-export default function Portfolio() {
+export default async function Portfolio() {
+  const data = await client.fetch<Data>(portfolioQuery, {}, { next: { revalidate: 60 } });
+  if (!data) return null;
+
+  const [headlineWord1, ...rest] = (data.headline ?? "").split(" ");
+  const headlineWord2 = rest.join(" ");
+
   return (
     <section className="w-full bg-white px-4 sm:px-6 md:px-8 lg:px-[32px] py-12 sm:py-16 md:py-20">
-      {/* Header */}
       <div className="flex items-start justify-between w-full gap-4 mb-10 lg:mb-[61px]">
         <div className="flex gap-2.5 items-start uppercase">
           <h2
             className="font-[family-name:var(--font-inter)] font-light leading-[0.86] text-black"
             style={HEADLINE_STYLE}
           >
-            <span className="block">Selected</span>
-            <span className="block">Work</span>
+            <span className="block">{headlineWord1}</span>
+            {headlineWord2 && <span className="block">{headlineWord2}</span>}
           </h2>
-          <p className={`${LABEL_CLASS} mt-1`}>004</p>
+          <p className={`${LABEL_CLASS} mt-1`}>{data.sectionNumber}</p>
         </div>
         <div className="flex h-[110px] items-center justify-center w-[15px] shrink-0">
           <div className="-rotate-90 whitespace-nowrap">
-            <p className={LABEL_CLASS}>[ Portfolio ]</p>
+            <p className={LABEL_CLASS}>{data.topLabel}</p>
           </div>
         </div>
       </div>
 
-      {/* Portfolio columns */}
       <div className="flex flex-col lg:flex-row gap-10 lg:gap-6 items-start">
         <div className="w-full lg:flex-1 flex flex-col gap-2.5">
-          {PROJECTS_LEFT.map((p) => (
-            <PortfolioCard key={p.title} {...p} />
+          {(data.projectsLeft ?? []).map((p) => (
+            <PortfolioCard key={p._id} project={p} tags={data.tags ?? []} />
           ))}
         </div>
         <div className="w-full lg:flex-1 flex flex-col gap-12 lg:gap-[117px] lg:pt-[240px]">
-          {PROJECTS_RIGHT.map((p) => (
-            <PortfolioCard key={p.title} {...p} />
+          {(data.projectsRight ?? []).map((p) => (
+            <PortfolioCard key={p._id} project={p} tags={data.tags ?? []} />
           ))}
         </div>
       </div>
 
-      {/* CTA */}
       <div className="mt-10 lg:mt-12 flex">
-        <CtaCard />
+        <CtaCard text={data.ctaText} label={data.ctaButtonLabel} />
       </div>
     </section>
   );

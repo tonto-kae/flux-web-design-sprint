@@ -1,14 +1,21 @@
 import Image from "next/image";
+import { client } from "@/sanity/lib/client";
+import { urlFor } from "@/sanity/lib/image";
+import { servicesQuery, type SanityImage } from "@/sanity/lib/queries";
 
-const SERVICES = [
-  { num: 1, title: "Brand Discovery", img: "/services/brand-discovery.png", objectPosition: "center" },
-  { num: 2, title: "Web Design & Dev", img: "/services/web-design.png", objectPosition: "center" },
-  { num: 3, title: "Marketing", img: "/services/marketing.png", objectPosition: "center" },
-  { num: 4, title: "Photography", img: "/services/photography.png", objectPosition: "50% 85%" },
-];
+type ServiceItem = {
+  _key: string;
+  title: string;
+  objectPosition?: string;
+  image: SanityImage;
+};
 
-const DESCRIPTION =
-  "Placeholder description of this service. Explain the value you provide and the outcomes clients can expect. Keep it to two or three sentences.";
+type Data = {
+  topLabel: string;
+  headline: string;
+  sharedDescription: string;
+  items: ServiceItem[];
+};
 
 const LABEL_CLASS =
   "font-[family-name:var(--font-geist-mono)] text-xs sm:text-sm uppercase leading-[1.1] text-white";
@@ -23,21 +30,26 @@ const TITLE_STYLE = {
   letterSpacing: "-0.04em",
 } as const;
 
-export default function Services() {
+export default async function Services() {
+  const data = await client.fetch<Data>(servicesQuery, {}, { next: { revalidate: 60 } });
+  if (!data) return null;
+
+  const items = data.items ?? [];
+
   return (
     <section className="w-full bg-black px-4 sm:px-6 md:px-8 lg:px-[32px] py-12 sm:py-16 md:py-20 flex flex-col items-start gap-10 md:gap-12">
-      <p className={LABEL_CLASS}>[ Services ]</p>
+      <p className={LABEL_CLASS}>{data.topLabel}</p>
 
       <div className="flex items-center justify-between gap-4 w-full uppercase font-[family-name:var(--font-inter)] font-light leading-none whitespace-nowrap text-white">
-        <p style={HEADLINE_STYLE}>[4]</p>
-        <p style={HEADLINE_STYLE}>Deliverables</p>
+        <p style={HEADLINE_STYLE}>[{items.length}]</p>
+        <p style={HEADLINE_STYLE}>{data.headline}</p>
       </div>
 
       <ul className="flex flex-col gap-10 md:gap-12 w-full">
-        {SERVICES.map((service) => (
-          <li key={service.num} className="flex flex-col gap-[9px] w-full">
+        {items.map((service, idx) => (
+          <li key={service._key} className="flex flex-col gap-[9px] w-full">
             <div className="flex flex-col gap-[9px] w-full">
-              <p className={LABEL_CLASS}>[ {service.num} ]</p>
+              <p className={LABEL_CLASS}>[ {idx + 1} ]</p>
               <div className="h-px w-full bg-white" />
             </div>
             <div className="flex flex-wrap items-start justify-between gap-y-6 w-full">
@@ -49,15 +61,15 @@ export default function Services() {
               </h3>
               <div className="flex flex-wrap gap-6 items-start">
                 <p className="font-[family-name:var(--font-inter)] text-sm leading-[1.3] tracking-[-0.04em] text-white w-full max-w-[393px]">
-                  {DESCRIPTION}
+                  {data.sharedDescription}
                 </p>
                 <div className="relative shrink-0 size-[120px] sm:size-[151px] overflow-hidden">
                   <Image
-                    src={service.img}
+                    src={urlFor(service.image).url()}
                     alt=""
                     fill
                     sizes="151px"
-                    style={{ objectPosition: service.objectPosition }}
+                    style={{ objectPosition: service.objectPosition || "center" }}
                     className="object-cover"
                   />
                 </div>
