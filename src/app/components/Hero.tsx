@@ -20,9 +20,9 @@ type SiteSettings = {
   navLinks: (NavLink & { _key: string })[];
 };
 
-export default async function Hero() {
+export default async function Hero({ query = heroQuery }: { query?: string } = {}) {
   const [hero, settings] = await Promise.all([
-    client.fetch<HeroData>(heroQuery, {}, { next: { revalidate: 60 } }),
+    client.fetch<HeroData>(query, {}, { next: { revalidate: 60 } }),
     client.fetch<SiteSettings>(siteSettingsQuery, {}, { next: { revalidate: 60 } }),
   ]);
 

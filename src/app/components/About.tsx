@@ -42,8 +42,8 @@ function renderLine(line: string) {
   );
 }
 
-export default async function About() {
-  const data = await client.fetch<Data>(aboutQuery, {}, { next: { revalidate: 60 } });
+export default async function About({ query = aboutQuery }: { query?: string } = {}) {
+  const data = await client.fetch<Data>(query, {}, { next: { revalidate: 60 } });
   if (!data) return null;
 
   const lines = data.headlineLines ?? [];

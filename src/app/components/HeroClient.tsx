@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 export type NavLink = { label: string; anchor: string };
@@ -29,6 +30,9 @@ export default function HeroClient({
   const [first, ...rest] = name.split(" ");
   const last = rest.join(" ");
 
+  const hrefFor = (anchor: string) =>
+    anchor === "about" ? "/about" : `#${anchor}`;
+
   return (
     <section className="relative w-full h-[85svh] min-h-[560px] max-h-[760px] md:h-[100svh] md:min-h-[640px] md:max-h-[1100px] overflow-hidden bg-[#cdd0d3]">
       <Image
@@ -55,19 +59,22 @@ export default function HeroClient({
 
       <div className="relative h-full flex flex-col justify-between px-4 md:px-8 pb-6 md:pb-10">
         <nav className="flex items-center justify-between py-6">
-          <span className="font-[family-name:var(--font-inter)] font-semibold text-base tracking-[-0.04em] text-black">
+          <Link
+            href="/"
+            className="font-[family-name:var(--font-inter)] font-semibold text-base tracking-[-0.04em] text-black"
+          >
             {logoText}
-          </span>
+          </Link>
 
           <ul className="hidden md:flex items-center gap-6 lg:gap-14">
             {navLinks.map((link) => (
               <li key={link.anchor}>
-                <a
-                  href={`#${link.anchor}`}
+                <Link
+                  href={hrefFor(link.anchor)}
                   className="font-[family-name:var(--font-inter)] font-semibold text-base tracking-[-0.04em] text-black"
                 >
                   {link.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
@@ -106,13 +113,13 @@ export default function HeroClient({
             <ul className="flex flex-col gap-5">
               {navLinks.map((link) => (
                 <li key={link.anchor}>
-                  <a
-                    href={`#${link.anchor}`}
+                  <Link
+                    href={hrefFor(link.anchor)}
                     onClick={() => setMenuOpen(false)}
                     className="font-[family-name:var(--font-inter)] font-semibold text-base tracking-[-0.04em] text-black"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
               <li>

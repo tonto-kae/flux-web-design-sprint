@@ -112,3 +112,24 @@ export const footerQuery = `*[_type == "footer"][0]{
   socialLinks[]{ _key, label, url },
   legalLinks[]{ _key, label, url }
 }`;
+
+export const aboutPageHeroQuery = `*[_type == "aboutPageHero"][0]{
+  eyebrow,
+  name,
+  description,
+  "backgroundImage": backgroundImage${imageProjection}
+}`;
+
+export const aboutPageAboutQuery = `*[_type == "aboutPageAbout"][0]{
+  topLabel,
+  sectionNumber,
+  headlineLines,
+  bottomLabel
+}`;
+
+export const aboutPageBioQuery = `*[_type == "aboutPageBio"][0]{
+  topLabel,
+  sectionNumber,
+  paragraph,
+  "portrait": portrait${imageProjection}
+}`;

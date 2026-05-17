@@ -12,6 +12,9 @@ import testimonials from "./testimonials";
 import newsSection from "./newsSection";
 import newsItem from "./newsItem";
 import footer from "./footer";
+import aboutPageHero from "./aboutPageHero";
+import aboutPageAbout from "./aboutPageAbout";
+import aboutPageBio from "./aboutPageBio";
 
 export const schemaTypes: SchemaTypeDefinition[] = [
   siteSettings,
@@ -26,6 +29,9 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   newsSection,
   newsItem,
   footer,
+  aboutPageHero,
+  aboutPageAbout,
+  aboutPageBio,
 ];
 
 export const SINGLETON_TYPES = new Set([
@@ -39,4 +45,7 @@ export const SINGLETON_TYPES = new Set([
   "testimonials",
   "newsSection",
   "footer",
+  "aboutPageHero",
+  "aboutPageAbout",
+  "aboutPageBio",
 ]);

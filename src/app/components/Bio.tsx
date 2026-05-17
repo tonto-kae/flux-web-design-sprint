@@ -37,8 +37,8 @@ function BracketedParagraph({
   );
 }
 
-export default async function Bio() {
-  const data = await client.fetch<Data>(bioQuery, {}, { next: { revalidate: 60 } });
+export default async function Bio({ query = bioQuery }: { query?: string } = {}) {
+  const data = await client.fetch<Data>(query, {}, { next: { revalidate: 60 } });
   if (!data) return null;
 
   const portraitUrl = data.portrait ? urlFor(data.portrait).url() : null;
